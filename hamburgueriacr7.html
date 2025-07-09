@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Hamburgueria CR7, tech edition, com menu mobile, parallax, partículas e WebGL 3D">
+  <title>CR7 Burgers - Ultra Tech Edition</title>
+
+  <!-- Fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet" />
+
+  <!-- Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+  <script src="https://unpkg.com/scrollreveal"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Cursor Neon -->
+  <style>
+    body, html { cursor: url('https://cur.cursors-4u.net/cursors/cur-13/cur1145.cur'), auto; }
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 5px;
+      background: linear-gradient(90deg, #00f0ff, #ff00ff);
+      width: 0; z-index: 9999;
+      transition: width 0.1s ease-out;
+    }
+  </style>
+
+  <!-- Estilos principais -->
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Courier New',monospace; background:#0a0f23;color:#00f0ff;min-height:100vh;overflow-x:hidden;transition:background .5s;}
+    header{position:fixed;top:0;width:100%;background:#01041a;display:flex;align-items:center;justify-content:space-between;padding:20px 40px;box-shadow:0 0 15px #00f0ff;z-index:1000;}
+    header h1{font-family:'Orbitron';font-size:2.5rem;text-shadow:0 0 10px #00f0ff;}
+    nav{display:flex;gap:20px;}
+    nav a{position:relative;color:#00f0ff;text-decoration:none;font-weight:700;font-size:1.1rem;padding:6px 12px;border-radius:6px;transition:.3s;}
+    nav a::after{content:'';position:absolute;left:0;bottom:-4px;width:0;height:2px;background:#ff00ff;transition:.3s;}
+    nav a:hover::after{width:100%;}
+    .menu-toggle{display:none;cursor:pointer;flex-direction:column;gap:4px;}
+    .menu-toggle div{width:30px;height:4px;background:#00f0ff;transition:.3s;}
+    main{padding:140px 30px 60px;}
+    section{margin-bottom:80px;}
+    h2{font-family:'Orbitron';font-size:2.2rem;color:#00f0ff;text-shadow:0 0 10px #00f0ff;border-bottom:3px solid #ff00ff;padding-bottom:6px;margin-bottom:30px;}
+    .burger-grid,.drinks-list{display:grid;gap:30px;}
+    .burger-grid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+    .burger-card,.drink-item{background:linear-gradient(145deg,#02102f,#031b5e);border-radius:14px;overflow:hidden;box-shadow:0 0 12px #00f0ff;transition:transform .4s,box-shadow .4s;cursor:pointer;}
+    .burger-card:hover,.drink-item:hover{transform:translateY(-10px) scale(1.05);box-shadow:0 0 35px #ff00ff;}
+    .burger-card img,.drink-item img{width:100%;object-fit:cover;filter:drop-shadow(0 0 5px #00f0ff);transition:filter .3s;}
+    .burger-card:hover img,.drink-item:hover img{filter:drop-shadow(0 0 15px #ff00ff);}
+    .burger-info{padding:20px;}
+    .burger-info h3{color:#ff00ff;font-size:1.4rem;text-shadow:0 0 10px #ff00ff;margin-bottom:8px;}
+    .burger-info p{color:#a0eaff;font-size:1rem;margin-bottom:10px;}
+    .burger-info span{color:#00f0ff;font-weight:700;font-size:1.2rem;text-shadow:0 0 8px #00f0ff;}
+    .drinks-list{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));justify-items:center;}
+    .drink-item{padding:15px;text-align:center;}
+    .drink-item p{color:#00f0ff;font-weight:600;text-shadow:0 0 8px #00f0ff;}
+    .cr7-section{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;background:#020519;padding:40px;border-radius:20px;box-shadow:0 0 45px #ff00ff inset;}
+    .cr7-section img{width:200px;border-radius:14px;transition:transform .3s;}
+    .cr7-section img:hover{transform:scale(1.1) rotate(2deg);}
+    .surprise-links{text-align:center;}
+    .surprise-links a{display:inline-block;background:linear-gradient(45deg,#ff00ff,#00f0ff);color:#01041a;padding:12px 28px;margin:10px;border-radius:30px;font-family:'Orbitron';font-weight:700;text-decoration:none;transition:.3s;}
+    .surprise-links a:hover{box-shadow:0 0 40px #00f0ff;}
+    footer{background:#01041a;text-align:center;padding:20px;color:#00f0ff;font-weight:700;}
+    @media(max-width:768px){
+      nav{display:none;position:absolute;top:60px;right:40px;background:#01041a;flex-direction:column;width:200px;padding:20px;border-radius:8px;box-shadow:0 0 15px #00f0ff;}
+      nav.show{display:flex;}
+      .menu-toggle{display:flex;}
+    }
+  </style>
+</head>
+<body>
+  <div id="progress-bar"></div>
+
+  <header>
+    <h1>CR7 Burgers</h1>
+    <div class="menu-toggle"><div></div><div></div><div></div></div>
+    <nav>
+      <a href="#hamburgueres">Hambúrgueres</a><a href="#refrigerantes">Refrigerantes</a>
+      <a href="#cr7">CR7</a><a href="#surpresa">Surpresa</a>
+    </nav>
+  </header>
+
+  <!-- Partículas de background -->
+  <div id="particles-js" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;"></div>
+
+  <main role="main">
+    <!-- Seções -->
+    <section id="hamburgueres">
+      <h2>Opções de Hambúrguer</h2>
+      <div class="burger-grid rellax" data-rellax-speed="-2">
+        <!-- cards... -->
+      </div>
+    </section>
+    <section id="refrigerantes">
+      <h2>Refrigerantes</h2>
+      <div class="drinks-list rellax" data-rellax-speed="-3">
+        <!-- drinks... -->
+      </div>
+    </section>
+    <section id="cr7" class="cr7-section">
+      <h2>CR7 - O Fenômeno</h2>
+      <!-- imagens... -->
+    </section>
+    <section id="surpresa" class="surprise-links">
+      <h2>Links Surpresa</h2>
+      <!-- links... -->
+    </section>
+  </main>
+
+  <footer>&copy; 2025 CR7 Burgers - Ultra Tech</footer>
+
+  <!-- Scripts -->
+  <script>
+    // Typed.js
+    new Typed("header h1", { strings:["CR7 Burgers ⚽","Tech & Sabor!","Futebol 4.0"], typeSpeed:60, backSpeed:30, loop:true });
+
+    // ScrollReveal
+    ScrollReveal().reveal('.burger-card', {delay:200,distance:'30px',origin:'bottom',interval:150});
+    ScrollReveal().reveal('.drink-item', {delay:200,distance:'20px',origin:'left',interval:100});
+    ScrollReveal().reveal('.cr7-section img', {delay:300,distance:'50px',origin:'bottom',interval:200});
+
+    // Parallax Rellax
+    new Rellax('.rellax');
+
+    // Particles.js
+    particlesJS('particles-js', {
+      "particles":{ "number":{ "value":80 }, "size":{ "value":3 },"move":{ "speed":1.5 }},
+      "interactivity":{ "events":{ "onhover":{ "enable":true, "mode":"repulse" }}}
+    });
+
+    // Menu mobile
+    const toggle = document.querySelector('.menu-toggle'), nav = document.querySelector('nav');
+    toggle.addEventListener('click', ()=>{ nav.classList.toggle('show'); toggle.classList.toggle('active'); });
+
+    // Scroll progress bar
+    const progress = document.getElementById('progress-bar');
+    window.addEventListener('scroll', ()=> {
+      const perc = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+      progress.style.width = perc + '%';
+    });
+
+    // (exemplo simples de Three.js modal)
+    // ... Aqui você pode inserir uma cena 3D WebGL modalizada.
+  </script>
+</body>
+</html>
